@@ -1,8 +1,13 @@
 import { Controller } from '@nestjs/common';
-import { Message } from 'node-telegram-bot-api';
+import { EventPattern } from '@nestjs/microservices';
+import { BotService } from '../services/bot.service';
 
 @Controller('bot')
 export class BotController {
-  // Implement your logic to handle incoming messages and interact with the wallet and DEX trade functionalities
-  // You can use the @Message() decorator to capture incoming messages from the Telegram bot
+  constructor(private readonly botService: BotService){}
+
+  @EventPattern('message')
+  async handleMessage(message: any) {
+    const response = await this.botService.handleMessage(message);
+  }
 }
