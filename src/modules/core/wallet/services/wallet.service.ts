@@ -32,12 +32,14 @@ export class WalletService {
   async generateTradeWallets(telegram_id: string) {
     const responseWallet = await this.findWallet(telegram_id);
     if (responseWallet) {
-      return responseWallet;
+      const walletBallance = await this.getWalletBalance(responseWallet);
+      const walletResult = WalletDetails(responseWallet, walletBallance);
+      return walletResult;
     }
+
     for (let i = 0; i < 3; i++) {
       const wallet = this.web3.eth.accounts.create();
       const { address, privateKey } = wallet;
-
       const walletEntity = {
         telegram_id: telegram_id,
         wallet_address: address,
@@ -46,7 +48,8 @@ export class WalletService {
       const newWallet = this.walletRepository.create(walletEntity);
       await this.walletRepository.save(newWallet);
     }
-    const response = await this.findWallet(telegram_id);
+    const result = await this.findWallet(telegram_id);
+    const response = WalletDetails(result);
     return response;
   }
 
@@ -56,8 +59,17 @@ export class WalletService {
     });
     if (walletExist.length > 0) {
       const wallet = walletExist.map((wallet) => wallet.wallet_address);
-      const response = WalletDetails(wallet);
-      return response;
+      return wallet;
     }
+  }
+
+  async getWalletBalance(wallets: any[]) {
+    const allWallet = wallets.map(async (walletAddress) => {
+      const balanceWei = await this.web3.eth.getBalance(walletAddress);
+      const balanceEth = this.web3.utils.fromWei(balanceWei, 'ether');
+      return balanceEth;
+    });
+    const walletBallance = await Promise.all(allWallet);
+    return walletBallance;
   }
 }
