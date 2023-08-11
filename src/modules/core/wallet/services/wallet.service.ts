@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { WalletDetails, WelcomeMessage } from 'src/@types/constants';
+import { WalletDetails } from 'src/@types/constants';
 import { Wallet } from 'src/entities/wallet.entity';
 import { Repository } from 'typeorm';
 import Web3 from 'web3';
@@ -17,16 +17,6 @@ export class WalletService {
     private readonly walletRepository: Repository<Wallet>,
   ) {
     this.web3 = new Web3(this.apikey);
-  }
-
-  async generateTradeProfile(telegram_id: string) {
-    const existingUser = await this.findWallet(telegram_id);
-    if (existingUser) {
-      return await this.generateTradeWallets(telegram_id);
-    }
-    const response = await this.generateTradeWallets(telegram_id);
-    const message = WelcomeMessage + response;
-    return message;
   }
 
   async generateTradeWallets(telegram_id: string) {

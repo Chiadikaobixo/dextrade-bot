@@ -30,7 +30,7 @@ export class BotService {
         username,
       };
       await this.userService.logUser(userDetails);
-      const response = await this.walletService.generateTradeProfile(id);
+      const response = await this.userService.generateProfile(id);
       this.bot.sendMessage(id, response);
     });
   }
