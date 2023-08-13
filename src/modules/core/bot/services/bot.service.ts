@@ -44,30 +44,48 @@ export class BotService {
       const response = await this.walletService.generateTradeWallets(
         telegramId,
       );
-
       const options = {
         reply_markup: JSON.stringify(InlineKeyboard),
       };
-
       this.bot.sendMessage(telegramId, response, options);
     });
+
     this.callBackQuery();
   }
 
   private callBackQuery() {
-    this.bot.on(
-      'callback_query',
-      async (query: { message: { chat: { id: any } }; data: any }) => {
-        const chatId = query.message.chat.id;
-        const callbackData = query.data;
+    this.bot.on('callback_query', async (query: any) => {
+      const chatId = query.message.chat.id;
+      const callbackData = query.data;
 
-        if (callbackData === 'buy_tokens') {
-        } else if (callbackData === 'token_balance') {
+      let result: string;
+
+      switch (callbackData) {
+        case 'buy_tokens':
+          break;
+        case 'sell_tokens':
+          break;
+        case 'buy_limit':
+          break;
+        case 'sell_limi':
+          break;
+        case 'copy_trade':
+          break;
+        case 'method_sniper':
+          break;
+        case 'token_balance':
           const response = await this.tokenService.tokenBalance();
-          const result = WalletBalanceResponse();
-          this.bot.sendMessage(chatId, result);
-        }
-      },
-    );
+          result = WalletBalanceResponse();
+          break;
+        case 'pnl_analysis':
+          break;
+        case 'settings':
+          break;
+        default:
+          break;
+      }
+
+      this.bot.sendMessage(chatId, result);
+    });
   }
 }
