@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WalletDetails } from 'src/@types/constants';
@@ -20,10 +20,10 @@ export class WalletService {
   }
 
   async generateTradeWallets(telegram_id: string) {
-    const responseWallet = await this.findWallet(telegram_id);
-    if (responseWallet) {
-      const walletBallance = await this.getWalletBalance(responseWallet);
-      const walletResult = WalletDetails(responseWallet, walletBallance);
+    const userWallet = await this.findWallet(telegram_id);
+    if (userWallet) {
+      const walletBallance = await this.getWalletBalance(telegram_id);
+      const walletResult = WalletDetails(userWallet, walletBallance);
       return walletResult;
     }
 
@@ -53,13 +53,17 @@ export class WalletService {
     }
   }
 
-  async getWalletBalance(wallets: any[]) {
-    const allWallet = wallets.map(async (walletAddress) => {
+  async getWalletBalance(telegramId: string) {
+    const returnedWallet = await this.findWallet(telegramId);
+    if (!returnedWallet)
+      throw new NotFoundException('[NOT FOUND]: Wallet not found');
+
+    const allWallet = returnedWallet.map(async (walletAddress) => {
       const balanceWei = await this.web3.eth.getBalance(walletAddress);
       const balanceEth = this.web3.utils.fromWei(balanceWei, 'ether');
       return balanceEth;
     });
-    const walletBallance = await Promise.all(allWallet);
-    return walletBallance;
+    const walletResponse = await Promise.all(allWallet);
+    return walletResponse;
   }
 }

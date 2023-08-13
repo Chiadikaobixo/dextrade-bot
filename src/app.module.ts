@@ -7,12 +7,14 @@ import { BotModule } from './modules/core/bot/bot.modules';
 import { WalletModule } from './modules/core/wallet/wallet.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/core/user/user.module';
+import { TokenModule } from './modules/core/token/token.module';
 
 @Module({
   imports: [
     BotModule,
     WalletModule,
     UserModule,
+    TokenModule,
     ConfigModule.forRoot({
       load: getEnvironment(),
       isGlobal: true,

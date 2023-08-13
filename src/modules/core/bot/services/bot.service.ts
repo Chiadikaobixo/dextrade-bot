@@ -3,6 +3,8 @@ import * as TelegramBot from 'node-telegram-bot-api';
 import { ConfigService } from '@nestjs/config';
 import { WalletService } from '../../wallet/services/wallet.service';
 import { UserService } from '../../user/services/User.service';
+import { TokenService } from '../../token/services/token.service';
+import { InlineKeyboard, WalletBalanceResponse } from 'src/@types/constants';
 
 @Injectable()
 export class BotService {
@@ -13,11 +15,12 @@ export class BotService {
     private configService: ConfigService,
     private readonly walletService: WalletService,
     private readonly userService: UserService,
+    private readonly tokenService: TokenService,
   ) {
     this.bot = new TelegramBot(this.botToken, { polling: true });
 
     this.initializeBot();
-    this.botWallet();
+    this.botMenu();
   }
 
   private initializeBot() {
@@ -35,13 +38,36 @@ export class BotService {
     });
   }
 
-  private botWallet() {
+  private botMenu() {
     this.bot.onText(/^\/menu$/i, async (message: any) => {
       const telegramId = message.chat.id;
       const response = await this.walletService.generateTradeWallets(
         telegramId,
       );
-      this.bot.sendMessage(telegramId, response);
+
+      const options = {
+        reply_markup: JSON.stringify(InlineKeyboard),
+      };
+
+      this.bot.sendMessage(telegramId, response, options);
     });
+    this.callBackQuery();
+  }
+
+  private callBackQuery() {
+    this.bot.on(
+      'callback_query',
+      async (query: { message: { chat: { id: any } }; data: any }) => {
+        const chatId = query.message.chat.id;
+        const callbackData = query.data;
+
+        if (callbackData === 'buy_tokens') {
+        } else if (callbackData === 'token_balance') {
+          const response = await this.tokenService.tokenBalance();
+          const result = WalletBalanceResponse();
+          this.bot.sendMessage(chatId, result);
+        }
+      },
+    );
   }
 }
