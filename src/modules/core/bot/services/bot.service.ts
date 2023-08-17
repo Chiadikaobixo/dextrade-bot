@@ -4,7 +4,11 @@ import { ConfigService } from '@nestjs/config';
 import { WalletService } from '../../wallet/services/wallet.service';
 import { UserService } from '../../user/services/User.service';
 import { TokenService } from '../../token/services/token.service';
-import { InlineKeyboard, WalletBalanceResponse } from 'src/@types/constants';
+import {
+  MenuInlineKeyboard,
+  SettingsInlineKeyboard,
+  WalletBalanceResponse,
+} from 'src/@types/constants';
 
 @Injectable()
 export class BotService {
@@ -45,47 +49,57 @@ export class BotService {
         telegramId,
       );
       const options = {
-        reply_markup: JSON.stringify(InlineKeyboard),
+        reply_markup: JSON.stringify(MenuInlineKeyboard),
       };
       this.bot.sendMessage(telegramId, response, options);
     });
 
-    this.callBackQuery();
+    this.menuCallBackQuery();
   }
 
-  private callBackQuery() {
+  private botSettings(telegramId: string) {
+    const response = 'Settings';
+    const options = {
+      reply_markup: JSON.stringify(SettingsInlineKeyboard),
+    };
+    this.bot.sendMessage(telegramId, response, options);
+  }
+
+  private menuCallBackQuery() {
     this.bot.on('callback_query', async (query: any) => {
       const chatId = query.message.chat.id;
       const callbackData = query.data;
 
-      let result: string;
+      let result: string | undefined;
 
       switch (callbackData) {
         case 'buy_tokens':
-          break;
+          return;
         case 'sell_tokens':
-          break;
+          return;
         case 'buy_limit':
-          break;
+          return;
         case 'sell_limi':
-          break;
+          return;
         case 'copy_trade':
-          break;
+          return;
         case 'method_sniper':
-          break;
+          return;
         case 'token_balance':
           const response = await this.tokenService.tokenBalance();
           result = WalletBalanceResponse();
-          break;
+          return;
         case 'pnl_analysis':
-          break;
+          return;
         case 'settings':
-          break;
+          this.botSettings(chatId);
+          return;
         default:
           break;
       }
-
-      this.bot.sendMessage(chatId, result);
+      if (result !== undefined) {
+        this.bot.sendMessage(chatId, result);
+      }
     });
   }
 }

@@ -30,7 +30,7 @@ export const WalletBalanceResponse = () => {
   return message;
 };
 
-export const InlineKeyboard = {
+export const MenuInlineKeyboard = {
   inline_keyboard: [
     [{ text: 'Buy Tokens', callback_data: 'buy_tokens' }],
     [{ text: 'Sell Tokens', callback_data: 'sell_tokens' }],
@@ -41,5 +41,20 @@ export const InlineKeyboard = {
     [{ text: 'Token Balances', callback_data: 'token_balance' }],
     [{ text: 'PNL Analysis', callback_data: 'pnl_analysis' }],
     [{ text: 'Settings', callback_data: 'settings' }],
+  ],
+};
+
+export const SettingsInlineKeyboard = {
+  inline_keyboard: [
+    [{ text: 'Main Menu', callback_data: 'main_menu' }],
+    [{ text: 'Close', callback_data: 'close' }],
+    [{ text: 'Replace Wallet', callback_data: 'replace_wallet'}],
+    [{ text: 'Import Wallet', callback_data: 'import_wallet' }],
+    [{ text: 'Private Key', callback_data: 'private_key' }],
+    [{ text: 'Transfer Eth', callback_data: 'transfer_eth' }],
+    [{ text: 'Transfer Token', callback_data: 'transfer_eth' }],
+    [{ text: 'Set Password', callback_data: 'set_password' }],
+    [{ text: 'Link Wallet', callback_data: 'link_wallet' }],
+    [{ text: 'Hide Tooltips', callback_data: 'hide_tooltips' }],
   ],
 };

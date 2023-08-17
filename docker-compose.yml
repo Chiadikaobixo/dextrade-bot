@@ -4,7 +4,7 @@ services:
     container_name: dex_trade_bot
     image: postgres:latest
     ports:
-      - '5432:5432'
+      - '5431:5431'
     volumes:
       - /var/folders/postgres:/data/postgres
     env_file:
