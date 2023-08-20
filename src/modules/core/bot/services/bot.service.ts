@@ -74,26 +74,26 @@ export class BotService {
 
       switch (callbackData) {
         case 'buy_tokens':
-          return;
+          break;
         case 'sell_tokens':
-          return;
+          break;
         case 'buy_limit':
-          return;
-        case 'sell_limi':
-          return;
+          break;
+        case 'sell_limit':
+          break;
         case 'copy_trade':
-          return;
+          break;
         case 'method_sniper':
-          return;
+          break;
         case 'token_balance':
           const response = await this.tokenService.tokenBalance();
           result = WalletBalanceResponse();
-          return;
+          break;
         case 'pnl_analysis':
-          return;
+          break;
         case 'settings':
           this.botSettings(chatId);
-          return;
+          break;
         default:
           break;
       }

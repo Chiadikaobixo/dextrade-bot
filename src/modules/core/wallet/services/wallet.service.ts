@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { WalletDetails } from 'src/@types/constants';
-import { Wallet } from 'src/entities/wallet.entity';
-import { Repository } from 'typeorm';
+import { Wallet, WalletsDocument } from 'src/schemas/wallet.schema';
 import Web3 from 'web3';
 
 @Injectable()
@@ -13,8 +13,8 @@ export class WalletService {
 
   constructor(
     private configService: ConfigService,
-    @InjectRepository(Wallet)
-    private readonly walletRepository: Repository<Wallet>,
+    @InjectModel(Wallet.name)
+    private readonly walletRepository: Model<WalletsDocument>,
   ) {
     this.web3 = new Web3(this.apikey);
   }
@@ -35,8 +35,7 @@ export class WalletService {
         wallet_address: address,
         wallet_private_key: privateKey,
       };
-      const newWallet = this.walletRepository.create(walletEntity);
-      await this.walletRepository.save(newWallet);
+      await this.walletRepository.create(walletEntity);
     }
     const result = await this.findWallet(telegram_id);
     const response = WalletDetails(result);
@@ -45,7 +44,7 @@ export class WalletService {
 
   async findWallet(telegram_id: string) {
     const walletExist = await this.walletRepository.find({
-      where: [{ telegram_id }],
+      telegram_id,
     });
     if (walletExist.length > 0) {
       const wallet = walletExist.map((wallet) => wallet.wallet_address);
