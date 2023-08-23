@@ -6,6 +6,8 @@ import { UserService } from '../../user/services/User.service';
 import { TokenService } from '../../token/services/token.service';
 import {
   MenuInlineKeyboard,
+  ReplaceWallet,
+  ReplaceWalletInlineKeyboard,
   SettingsInlineKeyboard,
   WalletBalanceResponse,
 } from 'src/@types/constants';
@@ -14,6 +16,7 @@ import {
 export class BotService {
   private botToken = this.configService.get<string>('bot.key');
   private bot: TelegramBot;
+  settingsMessageId: number;
 
   constructor(
     private configService: ConfigService,
@@ -38,23 +41,27 @@ export class BotService {
       };
       await this.userService.logUser(userDetails);
       const response = await this.userService.generateProfile(id);
-      this.bot.sendMessage(id, response);
+      const options = {
+        reply_markup: JSON.stringify(MenuInlineKeyboard),
+      };
+      this.bot.sendMessage(id, response, options);
     });
   }
 
   private botMenu() {
     this.bot.onText(/^\/menu$/i, async (message: any) => {
       const telegramId = message.chat.id;
-      const response = await this.walletService.generateTradeWallets(
-        telegramId,
-      );
-      const options = {
-        reply_markup: JSON.stringify(MenuInlineKeyboard),
-      };
-      this.bot.sendMessage(telegramId, response, options);
+      this.sendTradeWallets(telegramId);
     });
-
     this.menuCallBackQuery();
+  }
+
+  private async sendTradeWallets(telegramId: string) {
+    const response = await this.walletService.generateTradeWallets(telegramId);
+    const options = {
+      reply_markup: JSON.stringify(MenuInlineKeyboard),
+    };
+    this.bot.sendMessage(telegramId, response, options);
   }
 
   private botSettings(telegramId: string) {
@@ -62,7 +69,21 @@ export class BotService {
     const options = {
       reply_markup: JSON.stringify(SettingsInlineKeyboard),
     };
+    this.bot
+      .sendMessage(telegramId, response, options)
+      .then((sentMessage: any) => {
+        this.settingsMessageId = sentMessage.message_id;
+      });
+    this.settingsCallBackQuery();
+  }
+
+  private replaceWallet(telegramId: string) {
+    const response = ReplaceWallet();
+    const options = {
+      reply_markup: JSON.stringify(ReplaceWalletInlineKeyboard),
+    };
     this.bot.sendMessage(telegramId, response, options);
+    this.walletCallBackQuery();
   }
 
   private menuCallBackQuery() {
@@ -99,6 +120,62 @@ export class BotService {
       }
       if (result !== undefined) {
         this.bot.sendMessage(chatId, result);
+      }
+    });
+  }
+
+  private settingsCallBackQuery() {
+    this.bot.on('callback_query', async (query: any) => {
+      const telegramId = query.message.chat.id;
+      const callbackData = query.data;
+
+      switch (callbackData) {
+        case 'main_menu':
+          this.sendTradeWallets(telegramId);
+          break;
+        case 'close':
+          if (this.settingsMessageId) {
+            this.bot.deleteMessage(telegramId, this.settingsMessageId);
+            this.settingsMessageId = null;
+          }
+          break;
+        case 'replace_wallet':
+          this.replaceWallet(telegramId);
+          break;
+        case 'import_wallet':
+          break;
+        case 'private_key':
+          break;
+        case 'transfer_eth':
+          break;
+        case 'set_password':
+          break;
+        case 'link_wallet':
+          break;
+        case 'hide_tooltips':
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  private walletCallBackQuery() {
+    this.bot.on('callback_query', async (query: any) => {
+      const telegramId = query.message.chat.id;
+      const callbackData = query.data;
+
+      switch (callbackData) {
+        case 'wallet_1':
+          break;
+        case 'wallet_2':
+          break;
+        case 'wallet_3':
+          break;
+        case 'close_wallet':
+          break;
+        default:
+          break;
       }
     });
   }

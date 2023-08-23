@@ -30,6 +30,13 @@ export const WalletBalanceResponse = () => {
   return message;
 };
 
+export const ReplaceWallet = () => {
+  const message = `🔧 Replace Wallet - Which wallet do you want to replace?
+
+  ⚠️ Warning: Replaced wallets cannot be recovered.`
+  return message;
+}
+
 export const MenuInlineKeyboard = {
   inline_keyboard: [
     [{ text: 'Buy Tokens', callback_data: 'buy_tokens' }],
@@ -58,3 +65,12 @@ export const SettingsInlineKeyboard = {
     [{ text: 'Hide Tooltips', callback_data: 'hide_tooltips' }],
   ],
 };
+
+export const ReplaceWalletInlineKeyboard = {
+  inline_keyboard: [
+    [{ text: 'Wallet 1', callback_data: 'wallet_1' }],
+    [{ text: 'Wallet 2', callback_data: 'wallet_2' }],
+    [{ text: 'Wallet 3', callback_data: 'wallet_3'}],
+    [{ text: 'Close', callback_data: 'close_wallet'}],
+  ]
+}
