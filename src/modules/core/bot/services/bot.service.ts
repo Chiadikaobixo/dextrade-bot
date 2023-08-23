@@ -6,17 +6,21 @@ import { UserService } from '../../user/services/User.service';
 import { TokenService } from '../../token/services/token.service';
 import {
   MenuInlineKeyboard,
+  PrivateKeyInlineKeyboard,
   ReplaceWallet,
   ReplaceWalletInlineKeyboard,
   SettingsInlineKeyboard,
+  ViewPrivateKeyWarning,
   WalletBalanceResponse,
+  WalletPrivateKey,
+  WalletPrivateKeyInlineKeyboard,
 } from 'src/@types/constants';
 
 @Injectable()
 export class BotService {
   private botToken = this.configService.get<string>('bot.key');
   private bot: TelegramBot;
-  settingsMessageId: number;
+  userMessageId: number[];
 
   constructor(
     private configService: ConfigService,
@@ -25,7 +29,7 @@ export class BotService {
     private readonly tokenService: TokenService,
   ) {
     this.bot = new TelegramBot(this.botToken, { polling: true });
-
+    this.userMessageId = [];
     this.initializeBot();
     this.botMenu();
   }
@@ -72,7 +76,7 @@ export class BotService {
     this.bot
       .sendMessage(telegramId, response, options)
       .then((sentMessage: any) => {
-        this.settingsMessageId = sentMessage.message_id;
+        this.userMessageId.push(sentMessage.message_id);
       });
     this.settingsCallBackQuery();
   }
@@ -82,13 +86,53 @@ export class BotService {
     const options = {
       reply_markup: JSON.stringify(ReplaceWalletInlineKeyboard),
     };
-    this.bot.sendMessage(telegramId, response, options);
+    this.bot
+      .sendMessage(telegramId, response, options)
+      .then((sentMessage: any) => {
+        this.userMessageId.push(sentMessage.message_id);
+      });
     this.walletCallBackQuery();
+  }
+
+  private walletPrivateKey(telegramId: string) {
+    const response = WalletPrivateKey();
+    const options = {
+      reply_markup: JSON.stringify(WalletPrivateKeyInlineKeyboard),
+    };
+    this.bot
+      .sendMessage(telegramId, response, options)
+      .then((sentMessage: any) => {
+        this.userMessageId.push(sentMessage.message_id);
+      });
+    this.walletPrivateKeyCallBackQuery();
+  }
+
+  private viewWalletPrivateKey(telegramId: string) {
+    const response = ViewPrivateKeyWarning();
+    const options = {
+      reply_markup: JSON.stringify(PrivateKeyInlineKeyboard),
+    };
+    this.bot
+      .sendMessage(telegramId, response, options)
+      .then((sentMessage: any) => {
+        this.userMessageId.push(sentMessage.message_id);
+      });
+    this.viewWalletPrivateKeyCallBackQuery();
+  }
+
+  private close(telegramId: string, messageId: number) {
+    for (const id of this.userMessageId) {
+      if (id === messageId) {
+        this.bot.deleteMessage(telegramId, messageId);
+        const messageIdIndex = this.userMessageId.indexOf(messageId);
+        this.userMessageId.splice(messageIdIndex, 1);
+      }
+    }
   }
 
   private menuCallBackQuery() {
     this.bot.on('callback_query', async (query: any) => {
-      const chatId = query.message.chat.id;
+      const telegramId = query.message.chat.id;
       const callbackData = query.data;
 
       let result: string | undefined;
@@ -113,19 +157,20 @@ export class BotService {
         case 'pnl_analysis':
           break;
         case 'settings':
-          this.botSettings(chatId);
+          this.botSettings(telegramId);
           break;
         default:
           break;
       }
       if (result !== undefined) {
-        this.bot.sendMessage(chatId, result);
+        this.bot.sendMessage(telegramId, result);
       }
     });
   }
 
   private settingsCallBackQuery() {
     this.bot.on('callback_query', async (query: any) => {
+      const messageId = query.message.message_id;
       const telegramId = query.message.chat.id;
       const callbackData = query.data;
 
@@ -134,10 +179,7 @@ export class BotService {
           this.sendTradeWallets(telegramId);
           break;
         case 'close':
-          if (this.settingsMessageId) {
-            this.bot.deleteMessage(telegramId, this.settingsMessageId);
-            this.settingsMessageId = null;
-          }
+          this.close(telegramId, messageId);
           break;
         case 'replace_wallet':
           this.replaceWallet(telegramId);
@@ -145,6 +187,7 @@ export class BotService {
         case 'import_wallet':
           break;
         case 'private_key':
+          this.viewWalletPrivateKey(telegramId);
           break;
         case 'transfer_eth':
           break;
@@ -162,17 +205,67 @@ export class BotService {
 
   private walletCallBackQuery() {
     this.bot.on('callback_query', async (query: any) => {
+      const messageId = query.message.message_id;
       const telegramId = query.message.chat.id;
       const callbackData = query.data;
 
       switch (callbackData) {
         case 'wallet_1':
+          await this.walletService.replaceWallet(telegramId, 0);
+          await this.sendTradeWallets(telegramId);
+          this.walletPrivateKey(telegramId);
           break;
         case 'wallet_2':
+          await this.walletService.replaceWallet(telegramId, 1);
+          await this.sendTradeWallets(telegramId);
+          this.walletPrivateKey(telegramId);
           break;
         case 'wallet_3':
+          await this.walletService.replaceWallet(telegramId, 2);
+          await this.sendTradeWallets(telegramId);
+          this.walletPrivateKey(telegramId);
           break;
         case 'close_wallet':
+          this.close(telegramId, messageId);
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  private walletPrivateKeyCallBackQuery() {
+    this.bot.on('callback_query', async (query: any) => {
+      const messageId = query.message.message_id;
+      const telegramId = query.message.chat.id;
+      const callbackData = query.data;
+
+      switch (callbackData) {
+        case 'private_keys':
+          this.viewWalletPrivateKey(telegramId);
+          break;
+        case 'close_private_keys':
+          this.close(telegramId, messageId);
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  private viewWalletPrivateKeyCallBackQuery() {
+    this.bot.on('callback_query', async (query: any) => {
+      const messageId = query.message.message_id;
+      const telegramId = query.message.chat.id;
+      const callbackData = query.data;
+
+      switch (callbackData) {
+        case 'view_private_keys':
+          break;
+        case 'regenerate_link':
+          break;
+        case 'closeview_private_keys':
+          this.close(telegramId, messageId);
           break;
         default:
           break;

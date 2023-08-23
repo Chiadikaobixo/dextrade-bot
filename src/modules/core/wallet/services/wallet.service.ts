@@ -52,6 +52,23 @@ export class WalletService {
     }
   }
 
+  async replaceWallet(telegram_id: string, walletIndex: number) {
+    const userWallet = await this.walletRepository.find({
+      telegram_id,
+    });
+    if (!userWallet) return;
+
+    const { _id } = userWallet[walletIndex];
+
+    const wallet = this.web3.eth.accounts.create();
+    const { address, privateKey } = wallet;
+
+    await this.walletRepository.findOneAndUpdate(_id, {
+      wallet_address: address,
+      wallet_private_key: privateKey,
+    });
+  }
+
   async getWalletBalance(telegramId: string) {
     const returnedWallet = await this.findWallet(telegramId);
     if (!returnedWallet)

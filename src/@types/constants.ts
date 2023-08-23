@@ -33,9 +33,23 @@ export const WalletBalanceResponse = () => {
 export const ReplaceWallet = () => {
   const message = `🔧 Replace Wallet - Which wallet do you want to replace?
 
-  ⚠️ Warning: Replaced wallets cannot be recovered.`
+  ⚠️ Warning: Replaced wallets cannot be recovered.`;
   return message;
-}
+};
+
+export const WalletPrivateKey = () => {
+  const message = `⚠️ Alert: Wallet w1 has been replaced.`;
+  return message;
+};
+
+export const ViewPrivateKeyWarning = () => {
+  const message = `☁️ Your Wallet Private Keys ☁️
+  Access your private keys via DexTrade Cloud by clicking the button below. After accessing your keys, the webapp and its contents self-destruct and you will need to regenerate a new link to view your keys again. Additionally the webapp self-destructs after 5 minutes if not accessed. 
+  
+  Disclaimer: You are responsible for your funds once private keys are revealed. Please exercise extreme caution with these private keys. For your security and privacy, this message will be automatically deleted in 5 minutes.`;
+
+  return message;
+};
 
 export const MenuInlineKeyboard = {
   inline_keyboard: [
@@ -55,7 +69,7 @@ export const SettingsInlineKeyboard = {
   inline_keyboard: [
     [{ text: 'Main Menu', callback_data: 'main_menu' }],
     [{ text: 'Close', callback_data: 'close' }],
-    [{ text: 'Replace Wallet', callback_data: 'replace_wallet'}],
+    [{ text: 'Replace Wallet', callback_data: 'replace_wallet' }],
     [{ text: 'Import Wallet', callback_data: 'import_wallet' }],
     [{ text: 'Private Key', callback_data: 'private_key' }],
     [{ text: 'Transfer Eth', callback_data: 'transfer_eth' }],
@@ -70,7 +84,23 @@ export const ReplaceWalletInlineKeyboard = {
   inline_keyboard: [
     [{ text: 'Wallet 1', callback_data: 'wallet_1' }],
     [{ text: 'Wallet 2', callback_data: 'wallet_2' }],
-    [{ text: 'Wallet 3', callback_data: 'wallet_3'}],
-    [{ text: 'Close', callback_data: 'close_wallet'}],
-  ]
-}
+    [{ text: 'Wallet 3', callback_data: 'wallet_3' }],
+    [{ text: 'Close', callback_data: 'close_wallet' }],
+  ],
+};
+
+export const WalletPrivateKeyInlineKeyboard = {
+  inline_keyboard: [
+    [{ text: 'Private Keys', callback_data: 'private_keys' }],
+    [{ text: 'Close', callback_data: 'close_private_keys' }],
+  ],
+};
+
+
+export const PrivateKeyInlineKeyboard = {
+  inline_keyboard: [
+    [{ text: 'View Private Keys', callback_data: 'view_private_keys' }],
+    [{ text: 'Regenerate Link', callback_data: 'regenerate_link' }],
+    [{ text: 'Close', callback_data: 'closeview_private_keys' }],
+  ],
+};
