@@ -47,9 +47,22 @@ export const ViewPrivateKeyWarning = () => {
   Access your private keys via DexTrade Cloud by clicking the button below. After accessing your keys, the webapp and its contents self-destruct and you will need to regenerate a new link to view your keys again. Additionally the webapp self-destructs after 5 minutes if not accessed. 
   
   Disclaimer: You are responsible for your funds once private keys are revealed. Please exercise extreme caution with these private keys. For your security and privacy, this message will be automatically deleted in 5 minutes.`;
-
   return message;
 };
+
+export const ImportWalletWarning = () => {
+  const message = `☁️ Import Wallet ☁️
+  Import a wallet through DexTrade Cloud functions by clicking the button below. To ensure that user data is safe and secure, the link below self-destructs after use or after 10 minutes of inactivity.
+  
+  ⚠️ Warning: Replaced wallets cannot be recovered.`
+  return message;
+}
+
+export const TransferEthMessage = () => {
+  const message = `💸 Transfer Eth
+  ⬩Gas: 26 GWEI ⬩Block: 17979978 ⬩ETH: $1682`
+  return message;
+}
 
 export const MenuInlineKeyboard = {
   inline_keyboard: [
@@ -96,11 +109,41 @@ export const WalletPrivateKeyInlineKeyboard = {
   ],
 };
 
-
 export const PrivateKeyInlineKeyboard = {
   inline_keyboard: [
     [{ text: 'View Private Keys', callback_data: 'view_private_keys' }],
     [{ text: 'Regenerate Link', callback_data: 'regenerate_link' }],
     [{ text: 'Close', callback_data: 'closeview_private_keys' }],
+  ],
+};
+
+export const ImportWalletInlineKeyboard = {
+  inline_keyboard: [
+    [{ text: 'Import Wallet', callback_data: 'import_wallet_import_wallet' }],
+    [{ text: 'Regenerate Link', callback_data: 'regenerate_link_import_wallet' }],
+    [{ text: 'Close', callback_data: 'close_import_wallet' }],
+  ],
+};
+
+export const TransferEthInlineKeyboard = {
+  inline_keyboard: [
+    [{ text: 'Menu', callback_data: 'tf_main_menu' }],
+    [{ text: 'Close', callback_data: 'tf_close' }],
+    [{ text: 'FROM WALLET', callback_data: 'fffffff' }],
+    [{ text: 'Wallet 1', callback_data: 'tf_wallet_1' }],
+    [{ text: 'Wallet 2', callback_data: 'tf_wallet_2' }],
+    [{ text: 'Wallet 3', callback_data: 'tf_wallet_3' }],
+    [{ text: 'TO WALLET', callback_data: 'tttttttt' }],
+    [{ text: 'Wallet 1', callback_data: 'tt_wallet_1' }],
+    [{ text: 'Wallet 2', callback_data: 'tt_wallet_2' }],
+    [{ text: 'Wallet 3', callback_data: 'tt_wallet_3' }],
+    [{ text: 'Costum', callback_data: 'costum' }],
+    [{ text: 'TRANSFER AMOUNT', callback_data: 'ttttaaaaa' }],
+    [{ text: '0.1 ETH', callback_data: 'eth_amount_1' }],
+    [{ text: '0.3 ETH', callback_data: 'eth_amount_2' }],
+    [{ text: '0.5 ETH', callback_data: 'eth_amount_3' }],
+    [{ text: 'Custom', callback_data: 'costum_eth' }],
+    [{ text: 'All:0.0 ETH', callback_data: 'all_eth' }],
+    [{ text: 'Send Transfer', callback_data: 'send_transfer' }],
   ],
 };

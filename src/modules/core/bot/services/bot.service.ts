@@ -5,11 +5,15 @@ import { WalletService } from '../../wallet/services/wallet.service';
 import { UserService } from '../../user/services/User.service';
 import { TokenService } from '../../token/services/token.service';
 import {
+  ImportWalletInlineKeyboard,
+  ImportWalletWarning,
   MenuInlineKeyboard,
   PrivateKeyInlineKeyboard,
   ReplaceWallet,
   ReplaceWalletInlineKeyboard,
   SettingsInlineKeyboard,
+  TransferEthInlineKeyboard,
+  TransferEthMessage,
   ViewPrivateKeyWarning,
   WalletBalanceResponse,
   WalletPrivateKey,
@@ -120,6 +124,32 @@ export class BotService {
     this.viewWalletPrivateKeyCallBackQuery();
   }
 
+  private importWallet(telegramId: string) {
+    const response = ImportWalletWarning();
+    const options = {
+      reply_markup: JSON.stringify(ImportWalletInlineKeyboard),
+    };
+    this.bot
+      .sendMessage(telegramId, response, options)
+      .then((sentMessage: any) => {
+        this.userMessageId.push(sentMessage.message_id);
+      });
+    this.importWalletCallBackQuery();
+  }
+
+  private transferEth(telegramId: string) {
+    const response = TransferEthMessage();
+    const options = {
+      reply_markup: JSON.stringify(TransferEthInlineKeyboard),
+    };
+    this.bot
+      .sendMessage(telegramId, response, options)
+      .then((sentMessage: any) => {
+        this.userMessageId.push(sentMessage.message_id);
+      });
+    this.transferEthCallBackQuery();
+  }
+
   private close(telegramId: string, messageId: number) {
     for (const id of this.userMessageId) {
       if (id === messageId) {
@@ -185,11 +215,13 @@ export class BotService {
           this.replaceWallet(telegramId);
           break;
         case 'import_wallet':
+          this.importWallet(telegramId);
           break;
         case 'private_key':
           this.viewWalletPrivateKey(telegramId);
           break;
         case 'transfer_eth':
+          this.transferEth(telegramId);
           break;
         case 'set_password':
           break;
@@ -266,6 +298,71 @@ export class BotService {
           break;
         case 'closeview_private_keys':
           this.close(telegramId, messageId);
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  private importWalletCallBackQuery() {
+    this.bot.on('callback_query', async (query: any) => {
+      const messageId = query.message.message_id;
+      const telegramId = query.message.chat.id;
+      const callbackData = query.data;
+
+      switch (callbackData) {
+        case 'import_wallet_import_wallet':
+          break;
+        case 'regenerate_link_import_wallet':
+          break;
+        case 'close_import_wallet':
+          this.close(telegramId, messageId);
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  private transferEthCallBackQuery() {
+    this.bot.on('callback_query', async (query: any) => {
+      const messageId = query.message.message_id;
+      const telegramId = query.message.chat.id;
+      const callbackData = query.data;
+
+      switch (callbackData) {
+        case 'tf_main_menu':
+          this.sendTradeWallets(telegramId);
+          break;
+        case 'tf_close':
+          this.close(telegramId, messageId);
+          break;
+        case 'tf_wallet_1':
+          break;
+        case 'tf_wallet_2':
+          break;
+        case 'tf_wallet_3':
+          break;
+        case 'tt_wallet_1':
+          break;
+        case 'tt_wallet_2':
+          break;
+        case 'tt_wallet_3':
+          break;
+        case 'costum':
+          break;
+        case 'eth_amount_1':
+          break;
+        case 'eth_amount_2':
+          break;
+        case 'eth_amount_3':
+          break;
+        case 'costum_eth':
+          break;
+        case 'all_eth':
+          break;
+        case 'send_transfer':
           break;
         default:
           break;
