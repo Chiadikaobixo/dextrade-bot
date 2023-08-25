@@ -12,6 +12,7 @@ import {
   ReplaceWallet,
   ReplaceWalletInlineKeyboard,
   SettingsInlineKeyboard,
+  SettingsMessage,
   TransferEthInlineKeyboard,
   TransferEthMessage,
   ViewPrivateKeyWarning,
@@ -73,7 +74,7 @@ export class BotService {
   }
 
   private botSettings(telegramId: string) {
-    const response = 'Settings';
+    const response = SettingsMessage();
     const options = {
       reply_markup: JSON.stringify(SettingsInlineKeyboard),
     };
