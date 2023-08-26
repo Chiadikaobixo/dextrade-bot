@@ -20,12 +20,16 @@ import {
   WalletPrivateKey,
   WalletPrivateKeyInlineKeyboard,
 } from 'src/@types/constants';
+import { EAmountInEth, ECollum, ITransferInfo } from 'src/@types/interface';
 
 @Injectable()
 export class BotService {
   private botToken = this.configService.get<string>('bot.key');
   private bot: TelegramBot;
   userMessageId: number[];
+  transferEthFrom: number[];
+  transferEthTo: number[];
+  transferEthAmount: number[];
 
   constructor(
     private configService: ConfigService,
@@ -35,6 +39,10 @@ export class BotService {
   ) {
     this.bot = new TelegramBot(this.botToken, { polling: true });
     this.userMessageId = [];
+    this.transferEthFrom = [];
+    this.transferEthTo = [];
+    this.transferEthAmount = [];
+
     this.initializeBot();
     this.botMenu();
   }
@@ -149,6 +157,73 @@ export class BotService {
         this.userMessageId.push(sentMessage.message_id);
       });
     this.transferEthCallBackQuery();
+  }
+
+  private highlightedWallet(wallet: number, transferToorFrom: number) {
+    switch (transferToorFrom) {
+      case 1:
+        if (this.transferEthFrom.length) {
+          this.transferEthFrom = [];
+          this.transferEthFrom.push(wallet);
+        }
+        this.transferEthFrom.push(wallet);
+        break;
+      case 2:
+        if (this.transferEthTo.length) {
+          this.transferEthTo = [];
+          this.transferEthTo.push(wallet);
+        }
+        this.transferEthTo.push(wallet);
+        break;
+      default:
+        break;
+    }
+  }
+
+  private highlightedAmount(ethAmount: number) {
+    switch (ethAmount) {
+      case 1:
+        if (this.transferEthAmount.length) {
+          this.transferEthAmount = [];
+          this.transferEthAmount.push(EAmountInEth.Wallet1);
+        }
+        this.transferEthAmount.push(EAmountInEth.Wallet1);
+        break;
+      case 2:
+        if (this.transferEthAmount.length) {
+          this.transferEthAmount = [];
+          this.transferEthAmount.push(EAmountInEth.Wallet2);
+        }
+        this.transferEthAmount.push(EAmountInEth.Wallet2);
+        break;
+      case 3:
+        if (this.transferEthAmount.length) {
+          this.transferEthAmount = [];
+          this.transferEthAmount.push(EAmountInEth.Wallet3);
+        }
+        this.transferEthAmount.push(EAmountInEth.Wallet3);
+        break;
+      default:
+        break;
+    }
+  }
+
+  private async sendEth(telegramId: string) {
+    if (!this.transferEthFrom.length || !this.transferEthTo.length) return;
+    if (!this.transferEthAmount) return;
+    const userWallets = await this.walletService.findWallet(telegramId);
+    const sendingWallet = userWallets[this.transferEthFrom[0] - 1];
+    const sendingWalletPrivateKey = await this.walletService.findWalletPrivateKey(telegramId, sendingWallet)
+    const receivingWallet = userWallets[this.transferEthTo[0] - 1];
+
+    const trx: ITransferInfo = {
+      fromAddress: sendingWallet,
+      toAddress: receivingWallet,
+      amountInEther: this.transferEthAmount[0],
+      privateKey: sendingWalletPrivateKey[0]
+    }
+    
+    this.tokenService.transferEth(trx)
   }
 
   private close(telegramId: string, messageId: number) {
@@ -331,6 +406,8 @@ export class BotService {
       const messageId = query.message.message_id;
       const telegramId = query.message.chat.id;
       const callbackData = query.data;
+      const transferFrom = 1;
+      const transferTo = 2;
 
       switch (callbackData) {
         case 'tf_main_menu':
@@ -340,30 +417,40 @@ export class BotService {
           this.close(telegramId, messageId);
           break;
         case 'tf_wallet_1':
+          this.highlightedWallet(ECollum.Index1, transferFrom);
           break;
         case 'tf_wallet_2':
+          this.highlightedWallet(ECollum.Index2, transferFrom);
           break;
         case 'tf_wallet_3':
+          this.highlightedWallet(ECollum.Index3, transferFrom);
           break;
         case 'tt_wallet_1':
+          this.highlightedWallet(ECollum.Index1, transferTo);
           break;
         case 'tt_wallet_2':
+          this.highlightedWallet(ECollum.Index2, transferTo);
           break;
         case 'tt_wallet_3':
+          this.highlightedWallet(ECollum.Index3, transferTo);
           break;
         case 'costum':
           break;
         case 'eth_amount_1':
+          this.highlightedAmount(ECollum.Index1);
           break;
         case 'eth_amount_2':
+          this.highlightedAmount(ECollum.Index2);
           break;
         case 'eth_amount_3':
+          this.highlightedAmount(ECollum.Index3);
           break;
         case 'costum_eth':
           break;
         case 'all_eth':
           break;
         case 'send_transfer':
+          this.sendEth(telegramId);
           break;
         default:
           break;

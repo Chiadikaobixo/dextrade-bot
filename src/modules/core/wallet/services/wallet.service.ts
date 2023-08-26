@@ -52,6 +52,19 @@ export class WalletService {
     }
   }
 
+  async findWalletPrivateKey(telegram_id: string, wallet_address: string) {
+    try {
+      const walletExist = await this.walletRepository.find({
+        telegram_id,
+        wallet_address,
+      });
+      const walletPrivateKey = walletExist.map(
+        (wallet) => wallet.wallet_private_key,
+      );
+      return walletPrivateKey;
+    } catch (error) {}
+  }
+
   async replaceWallet(telegram_id: string, walletIndex: number) {
     const userWallet = await this.walletRepository.find({
       telegram_id,
