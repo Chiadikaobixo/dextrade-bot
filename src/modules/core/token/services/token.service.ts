@@ -1,20 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ethers, providers } from 'ethers';
 import { ITransferInfo } from 'src/@types/interface';
-import Web3 from 'web3';
 
 @Injectable()
 export class TokenService {
-  public web3: Web3;
   private apikey = this.configService.get<string>('api.key');
+  public provider: providers.JsonRpcProvider | ethers.providers.Provider;
 
   constructor(private configService: ConfigService) {
-    this.web3 = new Web3(this.apikey);
+    this.provider = new ethers.providers.JsonRpcProvider(this.apikey);
   }
 
   async buyToken(buyerPrivateKey: any, amountEth: any) {
-    const account =
-      this.web3.accountProvider.privateKeyToAccount(buyerPrivateKey);
+    const account = new ethers.Wallet(buyerPrivateKey);
   }
 
   async sellToken() {}
@@ -23,33 +22,27 @@ export class TokenService {
 
   async transferEth(transferInfo: ITransferInfo) {
     try {
-      const nonce = await this.web3.eth.getTransactionCount(
-        transferInfo.fromAddress,
-      );
-      const gasPrice = await this.web3.eth.getGasPrice();
-      const gasLimit = 21000;
-      const valueInWei = this.web3.utils.toWei(
-        transferInfo.amountInEther.toString(),
-        'ether',
-      );
+      const nonce = await this.provider.getTransactionCount(transferInfo.fromAddress);
+      const gasPrice = ethers.utils.parseUnits('20', 'gwei');
+      const gasLimit = ethers.BigNumber.from('21000');
+      const valueInWei = ethers.utils.parseEther(transferInfo.amountInEther.toString());
 
       const txObject = {
-        nonce: this.web3.utils.toHex(nonce),
+        nonce: nonce,
         to: transferInfo.toAddress,
-        value: this.web3.utils.toHex(valueInWei),
-        gasPrice: this.web3.utils.toHex(gasPrice),
-        gasLimit: this.web3.utils.toHex(gasLimit),
+        value: valueInWei,
+        gasPrice: gasPrice,
+        gasLimit: gasLimit,
       };
 
-      const signedTransaction = await this.web3.eth.accounts.signTransaction(
-        txObject,
-        transferInfo.privateKey,
-      );
-      const transactionReceipt = await this.web3.eth.sendSignedTransaction(
-        signedTransaction.rawTransaction,
-      );
+      const wallet = new ethers.Wallet(transferInfo.privateKey, this.provider);
+      const signedTransaction = await wallet.signTransaction(txObject);
 
+      const transactionResponse = await this.provider.sendTransaction(signedTransaction);
+      console.log('Transaction Hash:', transactionResponse);
     } catch (error) {
+      console.error('Error:', error.message);
     }
   }
+
 }
