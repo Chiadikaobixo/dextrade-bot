@@ -166,7 +166,7 @@ export const TransferEthInlineKeyboard = {
       { text: 'Wallet 2', callback_data: 'tt_wallet_2' },
       { text: 'Wallet 3', callback_data: 'tt_wallet_3' },
     ],
-    [{ text: 'Costum', callback_data: 'costum' }],
+    [{ text: 'Costum Wallet', callback_data: 'costum_wallet' }],
     [{ text: '🦄 TRANSFER AMOUNT 🦄', callback_data: 'ttttaaaaa' }],
     [
       { text: '0.1 ETH', callback_data: 'eth_amount_1' },
@@ -174,7 +174,7 @@ export const TransferEthInlineKeyboard = {
       { text: '0.5 ETH', callback_data: 'eth_amount_3' },
     ],
     [
-      { text: 'Custom', callback_data: 'costum_eth' },
+      { text: 'Custom Amount', callback_data: 'costum_eth' },
       { text: 'All:0.0 ETH', callback_data: 'all_eth' },
     ],
     [{ text: 'Send Transfer', callback_data: 'send_transfer' }],
