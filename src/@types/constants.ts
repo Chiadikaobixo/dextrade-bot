@@ -98,12 +98,12 @@ export const SettingsInlineKeyboard = {
     ],
     [
       { text: 'Transfer Token', callback_data: 'transfer_eth' },
-      { text: 'Set Password', callback_data: 'set_password' },
+      // { text: 'Set Password', callback_data: 'set_password' },
     ],
-    [
-      { text: 'Link Wallet', callback_data: 'link_wallet' },
-      { text: 'Hide Tooltips', callback_data: 'hide_tooltips' },
-    ],
+    // [
+    //   { text: 'Link Wallet', callback_data: 'link_wallet' },
+    //   { text: 'Hide Tooltips', callback_data: 'hide_tooltips' },
+    // ],
   ],
 };
 

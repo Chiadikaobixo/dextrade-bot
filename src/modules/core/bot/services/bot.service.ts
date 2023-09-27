@@ -27,7 +27,7 @@ export class BotService {
   private botToken = this.configService.get<string>('bot.key');
   private bot: TelegramBot;
   userMessageId: number[];
-  userReceivingWallet : string[];
+  userReceivingWallet: string[];
   userCustomAmount: number[];
   transferEthFrom: number[];
   transferEthTo: number[];
@@ -151,7 +151,7 @@ export class BotService {
       });
     this.importWalletCallBackQuery();
   }
-
+  
   private transferEth(telegramId: string) {
     const response = TransferEthMessage();
     const options = {
@@ -215,70 +215,85 @@ export class BotService {
   }
 
   private customWallet(telegramId: string) {
-    const response = "Please enter your custom wallet address:";
+    const response = 'Please enter your custom wallet address:';
     const options = {
       reply_markup: JSON.stringify({
-        force_reply: true
+        force_reply: true,
       }),
     };
-    
-    this.bot.sendMessage(telegramId, response, options)
-      .then((sentMessage: any) => {        
-        this.bot.onReplyToMessage(sentMessage.chat.id, sentMessage.message_id, (reply: any) => {
-          const customWalletAddress = reply.text;          
-          this.receivingWallet = customWalletAddress
-        });
+
+    this.bot
+      .sendMessage(telegramId, response, options)
+      .then((sentMessage: any) => {
+        this.bot.onReplyToMessage(
+          sentMessage.chat.id,
+          sentMessage.message_id,
+          (reply: any) => {
+            const customWalletAddress = reply.text;
+            this.receivingWallet = customWalletAddress;
+          },
+        );
       });
   }
 
   private customAmount(telegramId: string) {
-    const response = "Please enter your custom Amount:";
+    const response = 'Please enter your custom Amount:';
     const options = {
       reply_markup: JSON.stringify({
-        force_reply: true
+        force_reply: true,
       }),
     };
-    
-    this.bot.sendMessage(telegramId, response, options)
-      .then((sentMessage: any) => {        
-        this.bot.onReplyToMessage(sentMessage.chat.id, sentMessage.message_id, (reply: any) => {
-          const customEthAmount = reply.text;          
-          this.receivingEthAmount = customEthAmount
-        });
+
+    this.bot
+      .sendMessage(telegramId, response, options)
+      .then((sentMessage: any) => {
+        this.bot.onReplyToMessage(
+          sentMessage.chat.id,
+          sentMessage.message_id,
+          (reply: any) => {
+            const customEthAmount = reply.text;
+            this.receivingEthAmount = customEthAmount;
+          },
+        );
       });
   }
 
-  private async sendEth(telegramId: string, rWallet: string | null, rAmount: number | null) {
+  private async sendEth(
+    telegramId: string,
+    rWallet: string | null,
+    rAmount: number | null,
+  ) {
     if (!this.transferEthFrom.length) return;
     if (!this.transferEthAmount) return;
     const userWallets = await this.walletService.findWallet(telegramId);
     const sendingWallet = userWallets[this.transferEthFrom[0] - 1];
-    const sendingWalletPrivateKey = await this.walletService.findWalletPrivateKey(telegramId, sendingWallet)
+    const sendingWalletPrivateKey =
+      await this.walletService.findWalletPrivateKey(telegramId, sendingWallet);
     const uWallet = userWallets[this.transferEthTo[0] - 1];
 
     let sendToAddress: string;
     let ethAmount: number;
 
-    if(rWallet){
-      sendToAddress = rWallet
-    }else{
-      sendToAddress = uWallet 
+    if (rWallet) {
+      sendToAddress = rWallet;
+    } else {
+      sendToAddress = uWallet;
     }
 
-    if(rAmount){
-      ethAmount = Number(rAmount)
-    }else{
-      ethAmount = this.transferEthAmount[0]
+    if (rAmount) {
+      ethAmount = Number(rAmount);
+    } else {
+      ethAmount = this.transferEthAmount[0];
     }
 
     const trx: ITransferInfo = {
       fromAddress: sendingWallet,
       toAddress: sendToAddress,
       amountInEther: ethAmount,
-      privateKey: sendingWalletPrivateKey[0]
-    }
-    
-    this.tokenService.transferEth(trx)
+      privateKey: sendingWalletPrivateKey[0],
+    };
+
+    this.tokenService.transferEth(trx);
   }
 
   private close(telegramId: string, messageId: number) {
@@ -455,7 +470,17 @@ export class BotService {
       }
     });
   }
+
+  private async updateInlineKeyboard(telegramId: string, messageId: number, updatedInlineKeyboard: any) {
+    const options = {
+      chat_id: telegramId,
+      message_id: messageId,
+      reply_markup: JSON.stringify(updatedInlineKeyboard),
+    };
   
+    await this.bot.editMessageText(TransferEthMessage(), options);
+  }
+
   private transferEthCallBackQuery() {
     this.bot.on('callback_query', async (query: any) => {
       const messageId = query.message.message_id;
@@ -463,6 +488,10 @@ export class BotService {
       const callbackData = query.data;
       const transferFrom = 1;
       const transferTo = 2;
+
+      const updatedInlineKeyboard = JSON.parse(
+        JSON.stringify(TransferEthInlineKeyboard),
+      );
 
       switch (callbackData) {
         case 'tf_main_menu':
@@ -473,49 +502,90 @@ export class BotService {
           break;
         case 'tf_wallet_1':
           this.highlightedWallet(ECollum.Index1, transferFrom);
+          const walletIndex1 = parseInt(callbackData.replace('tf_wallet_', '')) - 1;
+          updatedInlineKeyboard.inline_keyboard[2][walletIndex1].text += ' ✅';
+          updatedInlineKeyboard.inline_keyboard[2][1].text = 'Wallet 2';
+          updatedInlineKeyboard.inline_keyboard[2][2].text = 'Wallet 3';
+
+          await this.updateInlineKeyboard(telegramId, messageId, updatedInlineKeyboard);
           break;
         case 'tf_wallet_2':
           this.highlightedWallet(ECollum.Index2, transferFrom);
+          const walletIndex2 = parseInt(callbackData.replace('tf_wallet_', '')) - 1;
+          updatedInlineKeyboard.inline_keyboard[2][0].text = 'Wallet 1';
+          updatedInlineKeyboard.inline_keyboard[2][walletIndex2].text += ' ✅';
+          updatedInlineKeyboard.inline_keyboard[2][2].text = 'Wallet 3';
+
+          await this.updateInlineKeyboard(telegramId, messageId, updatedInlineKeyboard);
           break;
         case 'tf_wallet_3':
           this.highlightedWallet(ECollum.Index3, transferFrom);
+          const walletIndex = parseInt(callbackData.replace('tf_wallet_', '')) - 1;
+          updatedInlineKeyboard.inline_keyboard[2][0].text = 'Wallet 1';
+          updatedInlineKeyboard.inline_keyboard[2][1].text = 'Wallet 2';
+          updatedInlineKeyboard.inline_keyboard[2][walletIndex].text += ' ✅';
+
+          await this.updateInlineKeyboard(telegramId, messageId, updatedInlineKeyboard);
           break;
         case 'tt_wallet_1':
           this.receivingWallet = null;
           this.highlightedWallet(ECollum.Index1, transferTo);
+          const walletIndexTo1 = parseInt(callbackData.replace('tt_wallet_', '')) - 1;
+          updatedInlineKeyboard.inline_keyboard[4][walletIndexTo1].text += ' ✅';
+          updatedInlineKeyboard.inline_keyboard[4][1].text = 'Wallet 2';
+          updatedInlineKeyboard.inline_keyboard[4][2].text = 'Wallet 3';
+
+          await this.updateInlineKeyboard(telegramId, messageId, updatedInlineKeyboard);
+
           break;
         case 'tt_wallet_2':
           this.receivingWallet = null;
           this.highlightedWallet(ECollum.Index2, transferTo);
+          const walletIndexTo2 = parseInt(callbackData.replace('tt_wallet_', '')) - 1;
+          updatedInlineKeyboard.inline_keyboard[4][0].text = 'Wallet 1';
+          updatedInlineKeyboard.inline_keyboard[4][walletIndexTo2].text += ' ✅';
+          updatedInlineKeyboard.inline_keyboard[4][2].text = 'Wallet 3';
+
+          await this.updateInlineKeyboard(telegramId, messageId, updatedInlineKeyboard);
           break;
         case 'tt_wallet_3':
           this.receivingWallet = null;
           this.highlightedWallet(ECollum.Index3, transferTo);
+          const walletIndexTo3 = parseInt(callbackData.replace('tt_wallet_', '')) - 1;
+          updatedInlineKeyboard.inline_keyboard[4][0].text = 'Wallet 1';
+          updatedInlineKeyboard.inline_keyboard[4][1].text = 'Wallet 2';
+          updatedInlineKeyboard.inline_keyboard[4][walletIndexTo3].text += ' ✅';
+
+          await this.updateInlineKeyboard(telegramId, messageId, updatedInlineKeyboard);
           break;
         case 'costum_wallet':
           this.customWallet(telegramId);
           break;
         case 'eth_amount_1':
-          this.receivingEthAmount = null
+          this.receivingEthAmount = null;
           this.highlightedAmount(ECollum.Index1);
           break;
         case 'eth_amount_2':
-          this.receivingEthAmount = null
+          this.receivingEthAmount = null;
           this.highlightedAmount(ECollum.Index2);
           break;
         case 'eth_amount_3':
-          this.receivingEthAmount = null
+          this.receivingEthAmount = null;
           this.highlightedAmount(ECollum.Index3);
           break;
         case 'costum_eth':
-          this.customAmount(telegramId)
+          this.customAmount(telegramId);
           break;
         case 'all_eth':
           break;
         case 'send_transfer':
-          this.sendEth(telegramId, this.receivingWallet, this.receivingEthAmount);
+          this.sendEth(
+            telegramId,
+            this.receivingWallet,
+            this.receivingEthAmount,
+          );
           this.receivingWallet = null;
-          this.receivingEthAmount = null
+          this.receivingEthAmount = null;
           break;
         default:
           break;
