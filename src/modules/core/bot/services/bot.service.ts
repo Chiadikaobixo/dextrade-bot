@@ -5,12 +5,16 @@ import { WalletService } from '../../wallet/services/wallet.service';
 import { UserService } from '../../user/services/User.service';
 import { TokenService } from '../../token/services/token.service';
 import {
+  BuyLimitMessage,
+  BuyTokenMessage,
   ImportWalletInlineKeyboard,
   ImportWalletWarning,
   MenuInlineKeyboard,
   PrivateKeyInlineKeyboard,
   ReplaceWallet,
   ReplaceWalletInlineKeyboard,
+  SellLimitMessage,
+  SellTokenMessage,
   SettingsInlineKeyboard,
   SettingsMessage,
   TransferEthInlineKeyboard,
@@ -19,6 +23,10 @@ import {
   WalletBalanceResponse,
   WalletPrivateKey,
   WalletPrivateKeyInlineKeyboard,
+  buyLimitInlineKeyboard,
+  buyTokenInlineKeyboard,
+  sellLimitInlineKeyboard,
+  sellTokenInlineKeyboard,
 } from 'src/@types/constants';
 import { EAmountInEth, ECollum, ITransferInfo } from 'src/@types/interface';
 
@@ -85,6 +93,60 @@ export class BotService {
       reply_markup: JSON.stringify(MenuInlineKeyboard),
     };
     this.bot.sendMessage(telegramId, response, options);
+  }
+
+  private buyToken(telegramId: string){
+    const response = BuyTokenMessage()
+    const options = {
+      reply_markup: JSON.stringify(buyTokenInlineKeyboard),
+    };
+    this.bot
+    .sendMessage(telegramId, response, options)
+    // .then((sentMessage: any) => {
+    //   this.userMessageId.push(sentMessage.message_id);
+    // });
+    this.buyTokenCallBackQuery()
+
+  }
+
+  private sellToken(telegramId: string){
+    const response = SellTokenMessage()
+    const options = {
+      reply_markup: JSON.stringify(sellTokenInlineKeyboard),
+    };
+    this.bot
+    .sendMessage(telegramId, response, options)
+    // .then((sentMessage: any) => {
+    //   this.userMessageId.push(sentMessage.message_id);
+    // });
+    this.sellTokenCallBackQuery()
+
+  }
+
+  private buyLimit(telegramId: string){
+    const response = BuyLimitMessage()
+    const options = {
+      reply_markup: JSON.stringify(buyLimitInlineKeyboard),
+    };
+    this.bot
+    .sendMessage(telegramId, response, options)
+    // .then((sentMessage: any) => {
+    //   this.userMessageId.push(sentMessage.message_id);
+    // });
+    this.buyLimitCallBackQuery()
+  }
+
+  private sellLimit(telegramId: string){
+    const response = SellLimitMessage()
+    const options = {
+      reply_markup: JSON.stringify(sellLimitInlineKeyboard),
+    };
+    this.bot
+    .sendMessage(telegramId, response, options)
+    // .then((sentMessage: any) => {
+    //   this.userMessageId.push(sentMessage.message_id);
+    // });
+    this.sellLimitCallBackQuery()
   }
 
   private botSettings(telegramId: string) {
@@ -315,12 +377,16 @@ export class BotService {
 
       switch (callbackData) {
         case 'buy_tokens':
+          this.buyToken(telegramId)
           break;
         case 'sell_tokens':
+          this.sellToken(telegramId)
           break;
         case 'buy_limit':
+          this.buyLimit(telegramId)
           break;
         case 'sell_limit':
+          this.sellLimit(telegramId)
           break;
         case 'copy_trade':
           break;
@@ -342,6 +408,74 @@ export class BotService {
         this.bot.sendMessage(telegramId, result);
       }
     });
+  }
+
+  private buyTokenCallBackQuery(){
+    this.bot.on('callback_query', async (query: any) => {
+      const messageId = query.message.message_id;
+      const telegramId = query.message.chat.id;
+      const callbackData = query.data;
+      
+      switch (callbackData) {
+        case '':
+          
+          break;
+      
+        default:
+          break;
+      }
+    })
+  }
+
+  private sellTokenCallBackQuery(){
+    this.bot.on('callback_query', async (query: any) => {
+      const messageId = query.message.message_id;
+      const telegramId = query.message.chat.id;
+      const callbackData = query.data;
+      
+      switch (callbackData) {
+        case '':
+          
+          break;
+      
+        default:
+          break;
+      }
+    })
+  }
+
+  private buyLimitCallBackQuery(){
+    this.bot.on('callback_query', async (query: any) => {
+      const messageId = query.message.message_id;
+      const telegramId = query.message.chat.id;
+      const callbackData = query.data;
+      
+      switch (callbackData) {
+        case '':
+          
+          break;
+      
+        default:
+          break;
+      }
+    })
+  }
+
+  private sellLimitCallBackQuery(){
+    this.bot.on('callback_query', async (query: any) => {
+      const messageId = query.message.message_id;
+      const telegramId = query.message.chat.id;
+      const callbackData = query.data;
+      
+      switch (callbackData) {
+        case '':
+          
+          break;
+      
+        default:
+          break;
+      }
+    })
   }
 
   private settingsCallBackQuery() {
